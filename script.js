@@ -5,7 +5,7 @@ var googlemaps = L.tileLayer('http://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&
     maxZoom: 19,
 });
 
-var Satellite = L.tileLayer('http://mt0.google.com/vt/lyrs=y&hl=en&x={x}&y={y}&z={z}', {
+var Satellite = L.tileLayer('http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}', {
     maxZoom: 19,
 });
 
@@ -110,6 +110,6 @@ var overlays = {
 L.control.layers(baseLayers, overlays, {collapsed:false}).addTo(map);
 
 // Add the custom base layer to the map by default
-googlemaps.addTo(map);
+Satellite.addTo(map);
 divillagesLayer.addTo(map);
 seism_center.addTo(map)
