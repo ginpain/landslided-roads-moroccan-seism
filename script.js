@@ -15,7 +15,7 @@ var titleControl = L.control({
 
 titleControl.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'map-title');
-    div.innerHTML = '<h1>خريطة انهيارات صخرية محتملة متاقطعة مع الطريق</h1>'; // Customize your map title here
+    div.innerHTML = '<h1>  خريطة انهيارات صخرية على الطريق و دواوير منكوبة بدرجات متفاوتة</h1>'; // Customize your map title here
     return div;
 };
 
@@ -23,41 +23,67 @@ titleControl.onAdd = function (map) {
 titleControl.addTo(map);
 
 // Function to create custom point markers with different colors
-function createCustomPointMarker(feature, latlng, color) {
+// Function to create custom point markers with a gradient red color based on an attribute
+function createCustomPointMarker(feature, latlng) {
+    // Replace 'attributeName' with the actual attribute name you want to use for styling
+    var attributeValue = feature.properties.landslide_1;
+    
+    // Define a gradient scale from light red to dark red based on attribute values
+    var colorScale = d3.scaleLog()
+        .domain([0.0006, 0.022]) // Specify the range of attribute values
+        .range(["white", "#c40024"]); // Define the corresponding gradient colors
+
     var customPointStyle = {
         radius: 6, // Adjust the size of the point
-        fillColor: color, // Use the color passed as an argument
+        fillColor: colorScale(attributeValue), // Set the fill color based on attribute value
         color: 'black', // Border color of the point
         weight: 1, // Border width of the point
         opacity: 1, // Opacity of the point
         fillOpacity: 0.8 // Fill opacity of the point
     };
+
+    return L.circleMarker(latlng, customPointStyle);
+}
+
+function createCustomPointMarker_ROADS(feature, latlng) {
+    var customPointStyle = {
+        radius: 6, // Adjust the size of the point
+        fillColor: 'yellow', // Set the fill color based on attribute value
+        color: 'black', // Border color of the point
+        weight: 1, // Border width of the point
+        opacity: 1, // Opacity of the point
+        fillOpacity: 0.8 // Fill opacity of the point
+    };
+
     return L.circleMarker(latlng, customPointStyle);
 }
 
 // Create custom GeoJSON layers with different colors
 var landslide = L.geoJSON(lslide, {
     pointToLayer: function (feature, latlng) {
-        return createCustomPointMarker(feature, latlng, 'red'); // Specify color for this layer
+        return createCustomPointMarker_ROADS(feature, latlng); // Specify color for this layer
     },
     onEachFeature: function (feature, layer) {
         // Add a popup to visualize the properties when a point is clicked
-        if (feature.properties && feature.properties.old_ref) {
-            layer.bindPopup('<b>طريق:</b> ' + feature.properties.old_ref);
+        if (feature.properties && feature.landslide_1) {
+            layer.bindPopup('<b>طريق:</b> ' + feature.landslide_1);
         }else {
             layer.bindPopup('<b>Name: طريق غير معروف</b> ' );
         }
     }   
 });
 
-var villagesLayer = L.geoJSON(villages, {
+
+var divillagesLayer = L.geoJSON(dvill, {
     pointToLayer: function (feature, latlng) {
-        return createCustomPointMarker(feature, latlng, 'green'); // Specify color for this layer
+        return createCustomPointMarker(feature, latlng, 'white'); // Specify color for this layer
     },
     onEachFeature: function (feature, layer) {
         // Add a popup to visualize the properties when a point is clicked
         if (feature.properties && feature.properties.name) {
             layer.bindPopup('<b>Name:</b> ' + feature.properties.name);
+        }else {
+            layer.bindPopup('<b>Name: الإسم على الخريطة</b>'  );
         }
     }
 });
@@ -73,8 +99,8 @@ var baseLayers = {
 
 // Create an overlay object for the custom GeoJSON layers
 var overlays = {
-    "انهيارات صخرية": landslide, // Add the first custom layer
-    "villages": villagesLayer // Add the second custom layer
+    " انهيارات صخرية في الطريق": landslide, 
+    'دواوير منكوبة' : divillagesLayer
 };
 
 
@@ -85,5 +111,5 @@ L.control.layers(baseLayers, overlays, {collapsed:false}).addTo(map);
 
 // Add the custom base layer to the map by default
 googlemaps.addTo(map);
-landslide.addTo(map);
+divillagesLayer.addTo(map);
 seism_center.addTo(map)
